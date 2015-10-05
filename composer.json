@@ -1,0 +1,16 @@
+{
+    "name": "itkg/combined-http-cache-bundle",
+    "description": "Combined HttpCache with Redis centralized storage for metadata",
+    "type": "library",
+    "require": {
+        "ext-redis": "^2.2",
+        "symfony/http-kernel": "^2.7"
+    },
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Gilles Taupenas",
+            "email": "gilles.taupenas@gmail.com"
+        }
+    ]
+}
