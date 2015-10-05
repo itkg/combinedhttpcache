@@ -1,6 +1,6 @@
 <?php
 
-namespace Itkg\CombinedHttpCacheBundle\HttpCache;
+namespace Itkg\CombinedHttpCache\HttpCache;
 
 use Symfony\Bundle\FrameworkBundle\HttpCache\HttpCache as BaseHttpCache;
 

@@ -1,6 +1,6 @@
 <?php
 
-namespace Itkg\CombinedHttpCacheBundle\HttpCache;
+namespace Itkg\CombinedHttpCache\HttpCache;
 
 use Symfony\Component\HttpKernel\HttpCache\StoreInterface;
 use Symfony\Component\HttpFoundation\Request;
