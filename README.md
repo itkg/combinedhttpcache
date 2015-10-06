@@ -26,7 +26,10 @@ class AppCache extends HttpCache
 }
 ```
 
-Then change for testing in dev environment the web/app_dev.php
+Then change for testing in dev environment the web/app_dev.php.
+
+**Please note you have to push correct Redis configuration string as a second argument of AppCache constructor.**
+ 
 ``` php
 ...
 $loader = require_once __DIR__.'/../app/bootstrap.php.cache';
@@ -37,7 +40,7 @@ require_once __DIR__.'/../app/AppCache.php';
 
 $kernel = new AppKernel('dev', true);
 $kernel->loadClassCache();
-$kernel = new AppCache($kernel);
+$kernel = new AppCache($kernel, array('redis_connection' => 'tcp://127.0.0.1:6379'));
 
 // When using the HttpCache, you need to call the method in your front controller instead of relying on the configuration parameter
 Request::enableHttpMethodParameterOverride();
