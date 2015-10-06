@@ -9,9 +9,20 @@ use Redis;
 
 class Store extends BaseStore
 {
+    protected $redisParams;
     protected $redisConnection;
 
     protected $localStore = array();
+
+    /**
+     * @param string $root
+     */
+    public function __construct($redisParams, $root)
+    {
+        $this->redisParams = $redisParams;
+
+        parent::__construct($root);
+    }
 
     /**
      * @inheritdoc
@@ -100,7 +111,9 @@ class Store extends BaseStore
         }
 
         $this->redisConnection = new Redis();
-        $this->redisConnection->connect('127.0.0.1', 6379);
+        if (false === $this->redisConnection->connect($this->redisParams)){
+            throw new \RuntimeException(sprintf("Cannot connect on Redis with %s", $this->redisParams));
+        }
 
         return $this->redisConnection;
     }
