@@ -13,6 +13,11 @@ Symfony component on Redis storage.
 Installation
 ------------
 
+Add the library to your project thanks to composer:
+```
+composer require itkg/combinedhttpcache
+```
+
 Edit app/AppCache.php to change HttpCache base class :
 ``` php
 <?php
