@@ -5,21 +5,22 @@ namespace Itkg\CombinedHttpCache\HttpCache;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 
-use Redis;
+use Itkg\CombinedHttpCache\Client\RedisClient as CacheClient;
 
 class Store extends BaseStore
 {
-    protected $redisParams;
-    protected $redisConnection;
+    protected $cacheConnectionDsn;
+    protected $cacheClient;
 
     protected $localStore = array();
 
     /**
-     * @param string $root
+     * @param string $cacheConnectionDsn    Normalized connection params for the cache client
+     * @param string $root                  The path to the cache directory
      */
-    public function __construct($redisParams, $root)
+    public function __construct($cacheConnectionDsn, $root)
     {
-        $this->redisParams = $redisParams;
+        $this->cacheConnectionDsn = $cacheConnectionDsn;
 
         parent::__construct($root);
     }
@@ -31,7 +32,7 @@ class Store extends BaseStore
     {
         // the metadata are only stored and retrieved in Redis, the only coherent place we have
         if ("md" === substr($key, 0, 2)) {
-            return $this->getRedis()->get($key);
+            return $this->getCacheClient()->get($key);
         }
 
         // the localStore is useful for content digest only
@@ -40,7 +41,7 @@ class Store extends BaseStore
         }
 
         if (false === $res = parent::load($key)) {
-            if (false !== $res = $this->getRedis()->get($key)) {
+            if (false !== $res = $this->getCacheClient()->get($key)) {
                 //@todo check if locking needed
                 parent::save($key, $res);
 
@@ -58,7 +59,7 @@ class Store extends BaseStore
     protected function save($key, $data)
     {
         //@todo check if locking needed
-        $this->getRedis()->set($key, $data);
+        $this->getCacheClient()->set($key, $data);
 
         // store content digest explicitly locally
         if ("md" !== substr($key, 0, 2)) {
@@ -99,22 +100,31 @@ class Store extends BaseStore
         }
     }
 
-    /*
-     * Returns the current Redis connection
-     *
-     * @return \Redis
+    /**
+     * @inheritdoc
      */
-    protected function getRedis()
+    public function write(Request $request, Response $response)
     {
-        if ($this->redisConnection) {
-            return $this->redisConnection;
+        $key = parent::write($request, $response);
+
+        if (false !== $tagsString = $response->headers->get('X-Cache-Tags')){
+            $this->getCacheClient()->addTagsToKey($key, explode(',', $tagsString));
         }
 
-        $this->redisConnection = new Redis();
-        if (false === $this->redisConnection->connect($this->redisParams)){
-            throw new \RuntimeException(sprintf("Cannot connect on Redis with %s", $this->redisParams));
+        return $key;
+    }
+
+    /*
+     * Returns the current cache client
+     *
+     * @return CacheClient
+     */
+    protected function getCacheClient()
+    {
+        if ($this->cacheClient) {
+            return $this->cacheClient;
         }
 
-        return $this->redisConnection;
+        return $this->cacheClient = new CacheClient($this->cacheConnectionDsn);
     }
 }
