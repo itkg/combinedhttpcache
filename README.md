@@ -18,6 +18,9 @@ Add the library to your project thanks to composer:
 composer require itkg/combinedhttpcache
 ```
 
+Integrate in Symfony
+--------------------
+
 Edit app/AppCache.php to change HttpCache base class :
 ``` php
 <?php
@@ -56,7 +59,91 @@ $response->send();
 $kernel->terminate($request, $response);
 ```
 
-If everything works correctly, then we can uncomment the code lines that Symfony keeps in comment to activate the cache. 
+If everything works correctly, cache can then be activated for 'prod' environment.
+For that, just uncomment the code lines that Symfony keeps in comment to activate the cache. 
+
+### Using cache ###
+
+From that point, cache annotations or explicit cache settings for a Response will be managed to make
+storage of the current request (or ESI request) in conformity to URL unicity and Vary headers.
+
+See :
+- http://symfony.com/doc/current/bundles/SensioFrameworkExtraBundle/annotations/cache.html
+- http://symfony.com/doc/current/book/http_cache.html
+
+### Manage tagging for cached requests ###
+
+Any request can be cached (if needed of course) and any cached request can be tagged.
+To rely on the same conventions has been the choice to manage tagging. For example, it
+will ease the process to move to Varnish even for the projects relying at the moment on this Redis version
+of HttpCache.
+
+The choice is to use the convention defined in FosHttpCache (https://foshttpcachebundle.readthedocs.org/en/latest/features/tagging.html) .
+
+Note : 
+The tagging can be followed easily thanks to the web debug toolbar for any "master request" and any ESI request.
+Search for the HTTP response header 'X-Cache-Tags'.
+
+
+### Internal design ###
+The cache storage is managed in two places: 
+- in Redis for metadata
+- in Redis and filesystem for content digest
+
+Note 1 :
+The double storage for content digest is quite handy because it keeps the reliability and speed
+for ESI management like the standard HttpCache that deals with a PHP include strategy to avoid 
+unserialiazation and get benefits of standard opcode cache.
+
+Note 2 : 
+Opcode cache needs however correct memory settings because it must mostly avoid evicting cache
+entries to be efficient. 
+
+A default configuration value can be done however for starting.
+```
+memory = size(all php files) + size(all cache/prod/http_cache/)
+```
+
+In bash it becomes:
+```
+du -h --max-depth=0 /var/frontend/cache/prod/http_cache/ /var/www
+```
+
+In case (for ITKG it is the case), the best is to measure memory usage thanks to APC.php script
+to see how it behaves.
+
+
+
+For simple invalidation out of Symfony
+-------------------------------------
+
+A specific integration is possible for backend responsible of blocks configuration hence 
+the need of invalidation.
+
+``` php
+<?php
+use Itkg\CombinedHttpCache\Client\RedisClient;
+
+// declare correct autoloading
+require_once __DIR__.'/../vendor/autoload.php'; 
+
+// create the client 
+$client = new RedisClient('tcp://127.0.0.1:6379');
+
+```
+
+Then the client can be used this way:
+``` php
+// Here, we remove the keys being both in tag-a and tag-b which means an intersection is computed to make the removal
+$res = $client->removeKeysFromTags(array('tag-a', 'tag-b'));
+
+// Here, all the keys present in tag-a are removed and all keys in tag-b too (it makes a union).
+$res = $client->removeKeysFromTags(array(array('tag-a'), array('tag-b')));
+
+```
+
+Note : manual key set/get/del should not be performed here because key hashing is a very complex task that only
+HttpCache should manage.
 
 License
 -------
