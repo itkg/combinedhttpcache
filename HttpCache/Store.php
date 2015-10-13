@@ -95,8 +95,8 @@ class Store extends BaseStore
         list($req, $headers) = $match;
 
         // @todo : find a way to overload only this condition
-        if (false !== $body = $this->load($digest = $headers['x-content-digest'][0])) {
-            return $this->restoreResponse($headers, $this->getPath($headers['x-content-digest'][0]));
+        if (false !== $this->load($digest = $headers['x-content-digest'][0])) {
+            return $this->restoreResponse($headers, $this->getPath($digest));
         }
     }
 
