@@ -107,7 +107,7 @@ class Store extends BaseStore
     {
         $key = parent::write($request, $response);
 
-        if (false !== $tagsString = $response->headers->get('X-Cache-Tags')){
+        if (false !== $tagsString = $response->headers->get('X-ITKG-Cache-Tags')){
             $this->getCacheClient()->addTagsToKey($key, explode(',', $tagsString));
         }
 
