@@ -78,11 +78,12 @@ To rely on the same conventions has been the choice to manage tagging. For examp
 will ease the process to move to Varnish even for the projects relying at the moment on this Redis version
 of HttpCache.
 
-The choice is to use the convention defined in FosHttpCache (https://foshttpcachebundle.readthedocs.org/en/latest/features/tagging.html) .
+The library expects meta data tagging in responses by positionning X-ITKG-Cache-Tags.
+Tags must be separated thanks to ',' character. Each tag name is trimmed in case space-like characters are present (when splitting the header on comas).
 
 Note : 
-The tagging can be followed easily thanks to the web debug toolbar for any "master request" and any ESI request.
-Search for the HTTP response header 'X-Cache-Tags'.
+- We cannot temporarily use the convention defined in FosHttpCache (https://foshttpcachebundle.readthedocs.org/en/latest/features/tagging.html) .
+- The tagging can be followed easily thanks to the web debug toolbar for any "master request" and any ESI request.
 
 
 ### Internal design ###

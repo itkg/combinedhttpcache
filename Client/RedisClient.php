@@ -66,7 +66,7 @@ class RedisClient
      * Remove the keys matching the given tags.
      * - By intersection if one dimension array is provided.
      * - If 2-dimensions array is provided
-     *   - sUion is applied between 1st dimension keys
+     *   - sUnion is applied between 1st dimension keys
      *   - in the 1st dimension key, sInter is applied between the 2nd dimension keys
      *
      * Example :
