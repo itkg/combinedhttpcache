@@ -119,7 +119,7 @@ class Store extends BaseStore
      *
      * @return CacheClient
      */
-    protected function getCacheClient()
+    public function getCacheClient()
     {
         if ($this->cacheClient) {
             return $this->cacheClient;
