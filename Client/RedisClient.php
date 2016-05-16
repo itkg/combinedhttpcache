@@ -114,7 +114,7 @@ class RedisClient
         return array('attempted' => $mergedKeys, 'really_deleted' => $nbDeleted);
     }
 
-    protected function executeEval($operation, $arguments)
+    public function executeEval($operation, $arguments)
     {
         return $this->connection->eval("return redis.call('$operation', '".implode("','", $arguments)."') ");
     }
