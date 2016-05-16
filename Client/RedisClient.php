@@ -81,7 +81,6 @@ class RedisClient
      */
     public function removeKeysFromTags(array $tags)
     {
-        //return $this->connection->sMembers('site-2');
         if (isset($tags[0]) && !is_array($tags[0])) {
             $tags = array($tags);
         }
@@ -95,9 +94,18 @@ class RedisClient
             $mergedKeys = is_array($currentKeys) ? array_merge($mergedKeys, $currentKeys) : $mergedKeys;
 
         }
+
+
         // execute key removal on unique keys and return them
         $mergedKeys = array_unique($mergedKeys);
+
         $nbDeleted = $this->executeEval('del', $mergedKeys);
+        // remove keys from tags
+        foreach($tags as $intersectExpression) {
+            foreach ($intersectExpression as $tag) {
+                $this->executeEval('SREM',array_merge(array($tag), $mergedKeys));
+            }
+        }
 
         return array('attempted' => $mergedKeys, 'really_deleted' => $nbDeleted);
     }
