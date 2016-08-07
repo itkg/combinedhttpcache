@@ -3,24 +3,70 @@
 namespace Itkg\CombinedHttpCache\Client;
 
 use Redis;
+use RedisArray;
 
 class RedisClient
-{
+{    
+    const REGEX_BRACKET = '/\\[(.*?)\\]/s';
+	const REGEX_SPLIT = '/[\s,]+/';
+	
+	const CHAR_QUOTE = '\'';
+	const CHAR_EMPTY = '';
+	
     protected $connection;
-
+    
     /**
      * Construct a redis connection.
-     *
+     * 
+     * Possible params :
+     * 		Redis -> tcp://host:port
+     * 		Redis Cluster -> ['host:post', 'host:port', 'host:port']
+     * 
+     * For cluster (RedisArray), it s possible to add second param : Array("connect_timeout" => 1000, "lazy_connect" => true);
+     * 
      * @param   $connectionDsn DSN string for redis connection
      *
      * @throws \RuntimeException If connection cannot be established
      */
+    
     public function __construct($connectionDsn)
-    {
-        $this->connection = new Redis();
-        if (false === $this->connection->connect($connectionDsn)) {
-            throw new \RuntimeException(sprintf('Cannot connect on Redis with %s', $connectionDsn));
-        }
+    {        	
+    	$redisDNS = $this->readParams($connectionDsn);
+    	
+    	if(is_array($redisDNS))
+    	{
+    		$this->connection = new RedisArray($redisDNS);
+    	}
+    	else
+    	{
+    	    $this->connection = new Redis();
+    	    
+	        if (false === $this->connection->connect($redisDNS)) {
+	            throw new RuntimeException(sprintf('Cannot connect on Redis with %s', $redisDNS));
+	        }
+    	}
+    }
+    
+    /**
+     * Extract array from params if possible 
+     * 
+    * @return array or string
+    */
+    
+	private function readParams($connectionDsn)
+    {    	
+		preg_match_all(RedisClient::REGEX_BRACKET, $connectionDsn, $matches);
+		
+		if(isset($matches[1][0]))
+		{
+			$unquote = str_replace(RedisClient::CHAR_QUOTE, RedisClient::CHAR_EMPTY, $matches[1][0]);
+			
+			return preg_split(RedisClient::REGEX_SPLIT, $unquote);
+		}
+		else
+		{
+			return $connectionDsn;
+		}
     }
 
     /**
@@ -31,8 +77,8 @@ class RedisClient
      * @return bool|string If the key is found, returns the data back. Returns false otherwise.
      */
     public function get($key)
-    {
-        return $this->connection->get($key);
+    {	
+    	return $this->connection->get($key);
     }
 
     /**
@@ -44,7 +90,7 @@ class RedisClient
      * @return bool Returns true if successful. Otherwise, returns false.
      */
     public function set($key, $value)
-    {
+    {    	
         return $this->connection->set($key, $value);
     }
 
