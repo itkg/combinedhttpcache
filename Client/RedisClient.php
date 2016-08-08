@@ -3,23 +3,61 @@
 namespace Itkg\CombinedHttpCache\Client;
 
 use Redis;
+use RedisArray;
 
+/**
+ * Class RedisClient
+ */
 class RedisClient
 {
+    const REGEX_BRACKET = '/\\[(.*?)\\]/s';
+    const REGEX_SPLIT = '/[\s,]+/';
+
     protected $connection;
 
     /**
      * Construct a redis connection.
      *
-     * @param   $connectionDsn DSN string for redis connection
+     * Possible params :
+     *     Redis -> tcp://host:port
+     *     Redis Cluster -> ['host:post', 'host:port', 'host:port']
+     *
+     * For cluster (RedisArray), it s possible to add second param : Array("connect_timeout" => 1000, "lazy_connect" => true);
+     *
+     * @param $connectionDsn DSN string for redis connection
      *
      * @throws \RuntimeException If connection cannot be established
      */
     public function __construct($connectionDsn)
     {
-        $this->connection = new Redis();
-        if (false === $this->connection->connect($connectionDsn)) {
-            throw new \RuntimeException(sprintf('Cannot connect on Redis with %s', $connectionDsn));
+        $redisDNS = $this->readParams($connectionDsn);
+
+        if (is_array($redisDNS)) {
+            $this->connection = new RedisArray($redisDNS);
+        } else {
+            $this->connection = new Redis();
+
+            if (false === $this->connection->connect($redisDNS)) {
+                throw new RuntimeException(sprintf('Cannot connect on Redis with %s', $redisDNS));
+            }
+        }
+    }
+
+    /**
+     * Extract array from params if possible
+     *
+    * @return array or string
+    */
+    private function readParams($connectionDsn)
+    {
+        preg_match_all(RedisClient::REGEX_BRACKET, $connectionDsn, $matches);
+
+        if (isset($matches[1][0])) {
+            $unquote = str_replace("'", '', $matches[1][0]);
+
+            return preg_split(RedisClient::REGEX_SPLIT, $unquote);
+        } else {
+            return $connectionDsn;
         }
     }
 
@@ -89,7 +127,7 @@ class RedisClient
         if (isset($tags[0]) && !is_array($tags[0])) {
             $tags = array($tags);
         }
-        
+
         // find all keys to remove
         $mergedKeys = array();
         foreach ($tags as $intersectExpression) {
