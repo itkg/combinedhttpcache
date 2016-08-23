@@ -11,7 +11,11 @@ class BaseStore implements StoreInterface
     protected $root;
     protected $keyCache;
     protected $locks;
-    protected $tagsToExclude;
+
+    /**
+     * @var array
+     */
+    protected $tagsToExclude = array();
 
     /**
      * Constructor.
@@ -19,7 +23,7 @@ class BaseStore implements StoreInterface
      * @param string $root The path to the cache directory
      * @param array $tagsToExclude   Removes the specified members from the set value stored at key
      */
-    public function __construct($root, $tagsToExclude)
+    public function __construct($root, array $tagsToExclude)
     {
         $this->root = $root;
         if (!is_dir($this->root)) {
@@ -402,10 +406,8 @@ class BaseStore implements StoreInterface
     {
         $header = $request->headers->all();
 
-        if ($this->tagsToExclude) {
-            foreach($this->tagsToExclude as $tag) {
-               unset($header[$tag]);
-            }
+        foreach ($this->tagsToExclude as $tag) {
+            unset($header[$tag]);
         }
 
         return $header;
