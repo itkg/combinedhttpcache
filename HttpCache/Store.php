@@ -17,12 +17,13 @@ class Store extends BaseStore
     /**
      * @param string $cacheConnectionDsn    Normalized connection params for the cache client
      * @param string $root                  The path to the cache directory
+     * @param array $tagsToExclude          Removes the specified members from the set value stored at key
      */
-    public function __construct($cacheConnectionDsn, $root)
+    public function __construct($cacheConnectionDsn, $root, $tagsToExclude)
     {
         $this->cacheConnectionDsn = $cacheConnectionDsn;
 
-        parent::__construct($root);
+        parent::__construct($root, $tagsToExclude);
     }
 
     /**
