@@ -23,7 +23,7 @@ class BaseStore implements StoreInterface
      * @param string $root The path to the cache directory
      * @param array $tagsToExclude   Removes the specified members from the set value stored at key
      */
-    public function __construct($root, array $tagsToExclude)
+    public function __construct($root, array $tagsToExclude = array())
     {
         $this->root = $root;
         if (!is_dir($this->root)) {
