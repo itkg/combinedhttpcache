@@ -19,7 +19,7 @@ class Store extends BaseStore
      * @param string $root                  The path to the cache directory
      * @param array $tagsToExclude          Removes the specified members from the set value stored at key
      */
-    public function __construct($cacheConnectionDsn, $root, array $tagsToExclude)
+    public function __construct($cacheConnectionDsn, $root, array $tagsToExclude = array())
     {
         $this->cacheConnectionDsn = $cacheConnectionDsn;
 
