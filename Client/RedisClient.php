@@ -87,6 +87,19 @@ class RedisClient
     }
 
     /**
+     * Set a key to the provided value in the cache
+     *
+     * @param   string       $key
+     * @param   string       $value
+     * @param   int          $lifeTime
+     * @return  bool         Returns true if successful. Otherwise, returns false.
+     */
+    public function setex($key, $lifeTime, $value)
+    {
+        return $this->connection->setex($key, $lifeTime, $value);
+    }
+    
+    /**
      * Adds the given key to the tags lists managed on the Redis side.
      *
      * @param string $key
