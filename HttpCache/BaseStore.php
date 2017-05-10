@@ -376,7 +376,11 @@ class BaseStore implements StoreInterface
      */
     protected function generateCacheKey(Request $request)
     {
-        return 'md'.hash('sha256', $request->getUri());
+        if (!preg_match('#(/api/|/_fragment)#', $request->getUri())) {
+            return 'md' . hash('sha256', preg_replace("#\?.*#", '', $request->getUri()));
+        }
+
+        return 'md' . hash('sha256', $request->getUri());
     }
 
     /**
