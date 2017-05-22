@@ -376,7 +376,23 @@ class BaseStore implements StoreInterface
      */
     protected function generateCacheKey(Request $request)
     {
-        return 'md'.hash('sha256', $request->getUri());
+
+        //url necessitant le calcul de utm
+        $parametersGet = $request->query->all();
+        if(!empty($parametersGet['utm_source'])) {
+            $out = preg_replace("#\?.*#", '', $request->getUri());
+            $out .= '?utm_source='.$parametersGet['utm_source'];
+
+            return 'md' . hash('sha256', $out);
+        }
+
+        //suppression des paramètres pour les  urls qui ne nécessitent pas de recalcul
+        if (!preg_match('#(/api/|/_fragment|codevin)#', $request->getUri())) {
+            return 'md' . hash('sha256', preg_replace("#\?.*#", '', $request->getUri()));
+        }
+
+        //url necessitant un recalcul du hash redis
+        return 'md' . hash('sha256', $request->getUri());
     }
 
     /**
