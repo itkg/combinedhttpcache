@@ -387,7 +387,7 @@ class BaseStore implements StoreInterface
         }
 
         //suppression des paramètres pour les  urls qui ne nécessitent pas de recalcul
-        if (!preg_match('#(/api/|/_fragment|codevin|b2b|category)#', $request->getUri())) {
+        if (!preg_match('#(/api/|/_fragment|codevin|b2b|category|lcdv(4|6|16))#', $request->getUri())) {
             return 'md' . hash('sha256', preg_replace("#\?.*#", '', $request->getUri()));
         }
 
