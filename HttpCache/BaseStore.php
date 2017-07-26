@@ -377,7 +377,10 @@ class BaseStore implements StoreInterface
     protected function generateCacheKey(Request $request)
     {
 
-        //url necessitant le calcul de utm
+        if (preg_match('#(/preview/|)#', $request->getUri())){
+            return 'md' . hash('sha256', $request->getUri(). uniqid());
+	}   
+	 //url necessitant le calcul de utm
         $parametersGet = $request->query->all();
         if(!empty($parametersGet['utm_source'])) {
             $out = preg_replace("#\?.*#", '', $request->getUri());
