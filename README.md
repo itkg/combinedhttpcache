@@ -1,6 +1,8 @@
 README
 ======
 
+**! Warning, this is a public fork of a project !**
+
 About
 -----
 
